@@ -12,6 +12,9 @@ FROM nginx:alpine
 # Copia los archivos del build de Angular (browser)
 COPY --from=build /app/dist/apifron/browser /usr/share/nginx/html
 
+# Angular con SSR genera index.csr.html — lo renombramos a index.html
+RUN mv /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html
+
 # Config nginx para que el routing de Angular funcione
 RUN printf 'server {\n\
     listen 80;\n\
