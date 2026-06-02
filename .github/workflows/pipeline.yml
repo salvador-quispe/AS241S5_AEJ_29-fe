@@ -1,0 +1,83 @@
+name: Frontend CI/CD - Render Deploy
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  # ─────────────────────────────────────────
+  # JOB 1: Build & Test
+  # ─────────────────────────────────────────
+  build:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Angular app (production)
+        run: npm run build -- --configuration production
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-dist
+          path: dist/
+          retention-days: 1
+
+  # ─────────────────────────────────────────
+  # JOB 2: Deploy to Render
+  # Solo se ejecuta en push a develop (no en PRs)
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          echo "Triggering deploy on Render..."
+          curl -s -o response.json -w "%{http_code}" \
+            --request POST \
+            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" > http_status.txt
+
+          HTTP_STATUS=$(cat http_status.txt)
+          echo "HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Deploy triggered successfully on Render."
+          else
+            echo "❌ Failed to trigger deploy. HTTP status: $HTTP_STATUS"
+            cat response.json
+            exit 1
+          fi
+
+      - name: Notify deploy status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🚀 Frontend deployed to Render successfully!"
+            if [ -n "${{ secrets.RENDER_SERVICE_URL }}" ]; then
+              echo "URL: ${{ secrets.RENDER_SERVICE_URL }}"
+            else
+              echo "URL: (agrega el secret RENDER_SERVICE_URL para verla aquí)"
+            fi
+          else
+            echo "💥 Deploy to Render failed. Check logs above."
+          fi
