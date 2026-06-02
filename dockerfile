@@ -2,13 +2,12 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
-
 COPY . .
+
+RUN npm install
 RUN npm run build -- --configuration production
 
-# Renombrar index.csr.html a index.html (Angular SSR genera este nombre)
+# Angular SSR genera index.csr.html, lo copiamos como index.html
 RUN cp /app/dist/apifron/browser/index.csr.html /app/dist/apifron/browser/index.html
 
 FROM nginx:alpine
