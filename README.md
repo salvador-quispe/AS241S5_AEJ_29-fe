@@ -1,6 +1,55 @@
-# Apifron
+# Apifron — AS241S5_AEJ_29-fe
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.9.
+
+## CI/CD Pipelines
+
+Este repositorio cuenta con **dos pipelines** de integración y despliegue continuo, ambos se activan al hacer push o pull request a la rama `develop`.
+
+### Pipeline 1 — GitHub Actions + Docker Hub (`dockerhub-ci.yml`)
+
+Construye la imagen Docker del frontend y la publica en Docker Hub.
+
+| Paso | Descripción |
+|------|-------------|
+| Checkout | Clona el repositorio |
+| Setup Node 20 | Configura el entorno Node |
+| npm install | Instala dependencias |
+| ng build | Compila la app Angular |
+| Docker build | Construye la imagen con nginx |
+| Docker push | Publica en Docker Hub |
+
+**Secrets requeridos:**
+- `DOCKERHUB_USERNAME` — tu usuario de Docker Hub
+- `DOCKERHUB_TOKEN` — token de acceso de Docker Hub
+
+---
+
+### Pipeline 2 — GitHub Actions + Render (`pipeline.yml`)
+
+Compila la app Angular en modo producción y dispara un deploy automático en [Render](https://render.com).
+
+| Paso | Descripción |
+|------|-------------|
+| Checkout | Clona el repositorio |
+| Setup Node 20 | Configura el entorno con caché npm |
+| npm ci | Instala dependencias de forma limpia |
+| ng build --prod | Compila en modo producción |
+| Upload artifact | Guarda el `dist/` como artefacto |
+| Render Deploy Hook | Llama al webhook de Render para iniciar el deploy |
+
+**Secrets requeridos:**
+- `RENDER_DEPLOY_HOOK_URL` — URL del deploy hook de tu servicio en Render
+- `RENDER_SERVICE_URL` — URL pública del servicio desplegado (para notificación)
+
+#### Cómo obtener el Deploy Hook de Render
+
+1. Ingresa a [render.com](https://render.com) y crea un **Static Site** o **Web Service**
+2. Ve a **Settings → Deploy Hook**
+3. Copia la URL generada
+4. Agrégala como secret `RENDER_DEPLOY_HOOK_URL` en GitHub → Settings → Secrets and variables → Actions
+
+---
 
 ## Development server
 

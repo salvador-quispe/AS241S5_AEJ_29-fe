@@ -55,7 +55,7 @@ jobs:
           echo "Triggering deploy on Render..."
           curl -s -o response.json -w "%{http_code}" \
             --request POST \
-            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" > http_status.txt
+            "${{ secrets.RENDER_DEPLOY_HOOK }}" > http_status.txt
 
           HTTP_STATUS=$(cat http_status.txt)
           echo "HTTP Status: $HTTP_STATUS"
