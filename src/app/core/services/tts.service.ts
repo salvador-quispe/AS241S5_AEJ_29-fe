@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TtsRequest, TtsResponse } from '../models/tts.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TtsService {
   private readonly http = inject(HttpClient);
-  private readonly BASE = '/api/tts';
+  private readonly BASE = `${environment.apiUrl}/api/tts`;
 
   generate(data: TtsRequest): Observable<TtsResponse> {
     return this.http.post<TtsResponse>(`${this.BASE}/generate`, data);
@@ -33,7 +34,7 @@ export class TtsService {
   }
 
   getAudioUrl(id: number | string): string {
-    return `/api/tts/${id}/audio`;
+    return `${environment.apiUrl}/api/tts/${id}/audio`;
   }
 
   downloadAudio(id: number | string, filename?: string): void {

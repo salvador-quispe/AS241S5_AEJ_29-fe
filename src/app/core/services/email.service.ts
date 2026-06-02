@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { EmailRequest, EmailResponse } from '../models/email.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EmailService {
   private readonly http = inject(HttpClient);
-  private readonly BASE = '/api/email';
+  private readonly BASE = `${environment.apiUrl}/api/email`;
 
   verify(data: EmailRequest): Observable<EmailResponse> {
     return this.http.post<EmailResponse>(`${this.BASE}/verify`, data);

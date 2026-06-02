@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ConnectionService {
@@ -11,7 +12,7 @@ export class ConnectionService {
     if (!isPlatformBrowser(this.platformId)) return;
 
     // Use fetch directly — bypasses the Angular HTTP interceptor
-    fetch('/api/tts/history', { signal: AbortSignal.timeout(3000) })
+    fetch(`${environment.apiUrl}/api/tts/history`, { signal: AbortSignal.timeout(3000) })
       .then(res => {
         this.isOnline.set(res.ok || res.status === 401);
       })
